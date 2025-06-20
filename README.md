@@ -1,36 +1,180 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎯 AI Destekli Görev Takip Sistemi
 
-## Getting Started
+Bu proje, Next.js 14, MongoDB, NextAuth ve OpenAI entegrasyonu ile geliştirilmiş modern bir görev yönetim uygulamasıdır.
 
-First, run the development server:
+## ✨ Özellikler
 
+### 🔐 Kimlik Doğrulama
+- **Email/Şifre ile giriş** - Güvenli şifre hash'leme
+- **Google OAuth** - Tek tıkla giriş
+- **Session yönetimi** - NextAuth ile güvenli oturum kontrolü
+
+### 📋 Görev Yönetimi
+- **CRUD İşlemleri** - Görev ekleme, listeleme, silme
+- **Kullanıcıya özel görevler** - Her kullanıcı kendi görevlerini görür
+- **Responsive tasarım** - Mobil uyumlu arayüz
+
+### 🤖 AI Özellikleri (OpenAI Entegrasyonu)
+- **AI Görev Önerileri** - Konu bazlı akıllı görev önerileri
+- **Otomatik Açıklama** - Görev başlığından AI ile açıklama oluşturma
+- **Öncelik Analizi** - AI ile görev öncelik belirleme (gelecekte)
+- **Kategori Önerisi** - AI ile görev kategorilendirme (gelecekte)
+
+## 🛠️ Teknolojiler
+
+- **Framework:** Next.js 14 (App Router)
+- **Veritabanı:** MongoDB
+- **Kimlik Doğrulama:** NextAuth.js
+- **UI Kütüphanesi:** Shadcn/UI + Tailwind CSS
+- **AI:** OpenAI GPT-3.5-turbo
+- **Şifreleme:** bcryptjs
+- **TypeScript:** Tam tip güvenliği
+
+## 🚀 Kurulum
+
+### 1. Projeyi klonlayın
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repo-url>
+cd task-tracker
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Bağımlılıkları yükleyin
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Ortam değişkenlerini ayarlayın
+`.env.local` dosyası oluşturun ve aşağıdaki değişkenleri ekleyin:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+# MongoDB bağlantı dizesi
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
 
-## Learn More
+# NextAuth yapılandırması
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key-here
 
-To learn more about Next.js, take a look at the following resources:
+# Google OAuth kimlik bilgileri
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# OpenAI API anahtarı
+OPENAI_API_KEY=sk-your-openai-api-key-here
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 4. Geliştirme sunucusunu başlatın
+```bash
+npm run dev
+```
 
-## Deploy on Vercel
+Uygulama `http://localhost:3000` adresinde çalışacaktır.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📱 Kullanım
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Kayıt/Giriş
+1. Uygulamayı açın
+2. "Kayıt Ol" ile hesap oluşturun veya "Giriş Yap" ile mevcut hesabınızla giriş yapın
+3. Google hesabınızla da tek tıkla giriş yapabilirsiniz
+
+### AI Görev Asistanı
+1. **Görev Önerileri:** Bir konu girin (örn: "ev temizliği") ve AI'dan öneriler alın
+2. **Otomatik Açıklama:** Görev başlığı girin ve "AI ile Oluştur" butonuna tıklayın
+3. **Önerileri Kullan:** AI önerilerini "Kullan" butonu ile doğrudan forma aktarın
+
+### Görev Yönetimi
+1. **Yeni Görev:** Başlık ve açıklama girerek görev ekleyin
+2. **Görev Listesi:** Tüm görevlerinizi görüntüleyin
+3. **Görev Silme:** İstemediğiniz görevleri silin
+
+## 🏗️ Proje Yapısı
+
+```
+src/
+├── app/                      # Next.js App Router
+│   ├── api/                 # API endpoints
+│   │   ├── auth/           # Authentication APIs
+│   │   ├── tasks/          # Task CRUD APIs
+│   │   └── ai/             # AI integration APIs
+│   ├── auth/               # Auth pages (signin/signup)
+│   ├── providers/          # Context providers
+│   └── layout.tsx          # Root layout
+├── components/             # React components
+│   ├── ui/                # Shadcn UI components
+│   ├── Navbar.tsx         # Navigation bar
+│   └── Footer.tsx         # Footer
+└── lib/                   # Utility libraries
+    ├── mongodb.ts         # Database connection
+    ├── authOptions.ts     # NextAuth config
+    └── openai.ts          # OpenAI integration
+```
+
+## 🎯 AI Özellikleri Detayı
+
+### Görev Önerileri
+AI, girdiğiniz konuya göre 5 adet pratik ve uygulanabilir görev önerisi oluşturur:
+- Konu: "ev temizliği" → Mutfak temizliği, banyo temizliği, vs.
+- Konu: "proje yönetimi" → Zaman çizelgesi, ekip toplantısı, vs.
+
+### Otomatik Açıklama
+Görev başlığına göre detaylı açıklama oluşturur:
+- Başlık: "Web sitesi güncellemesi" → "Mevcut web sitesindeki içerikleri gözden geçir ve güncel bilgilerle değiştir..."
+
+### Gelecek Özellikler
+- **Öncelik Analizi:** AI görevlerin aciliyet seviyesini belirler
+- **Kategori Önerisi:** Görevleri otomatik kategorilere ayırır
+- **Akıllı Hatırlatıcılar:** AI ile optimize edilmiş bildirimler
+
+## 🔧 Geliştirme
+
+### API Endpoints
+- `GET/POST/DELETE /api/tasks` - Görev CRUD işlemleri
+- `POST /api/auth/register` - Kullanıcı kaydı
+- `POST /api/ai/suggestions` - AI görev önerileri
+- `POST /api/ai/description` - AI açıklama oluşturma
+
+### Database Schema
+```javascript
+// Users koleksiyonu
+{
+  name: string,
+  email: string,
+  password: string, // bcrypt hash
+  createdAt: Date
+}
+
+// Tasks koleksiyonu
+{
+  title: string,
+  description: string,
+  userId: string,
+  priority?: string,    // AI tarafından belirlenen
+  category?: string,    // AI tarafından belirlenen
+  createdAt: Date
+}
+```
+
+## 🛡️ Güvenlik
+
+- **Şifre Hash'leme:** bcrypt ile 12 round
+- **Session Yönetimi:** JWT tabanlı güvenli oturumlar
+- **API Güvenliği:** Input validasyonu ve rate limiting
+- **MongoDB Injection:** Parameterized queries
+
+## 📄 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır.
+
+## 🤝 Katkıda Bulunma
+
+1. Fork yapın
+2. Feature branch oluşturun (`git checkout -b feature/AmazingFeature`)
+3. Commit yapın (`git commit -m 'Add some AmazingFeature'`)
+4. Push yapın (`git push origin feature/AmazingFeature`)
+5. Pull Request oluşturun
+
+## 📞 İletişim
+
+Herhangi bir sorunuz için issue açabilirsiniz.
+
+---
+💡 **İpucu:** OpenAI API anahtarı olmadan da uygulama çalışır, sadece AI özellikleri devre dışı kalır.
