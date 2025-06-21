@@ -233,7 +233,8 @@ export default function TaskManager() {
   // Form input değişikliklerini yöneten fonksiyon
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setNewTask({ ...newTask, [name]: value });
+    console.log('Input change:', { name, value }); // Debug için
+    setNewTask(prev => ({ ...prev, [name]: value }));
   };
 
   // AI görev önerileri alma fonksiyonu
@@ -403,8 +404,16 @@ export default function TaskManager() {
 
       const newTaskData = await response.json();
       setTasks([...tasks, newTaskData]);
+      
+      // Form'u temizle
       setNewTask({ title: '', description: '', priority: 'orta', category: '', deadline: '' });
       setError('');
+      
+      // Başarı mesajı göster
+      setSuccessMessage('✅ Görev başarıyla eklendi!');
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
     } catch (error) {
       console.error('Görev ekleme hatası:', error);
       setError('Görev eklenemedi. Lütfen tekrar deneyin.');
@@ -585,24 +594,39 @@ export default function TaskManager() {
       {/* Ana Eylemler - Sadece Görevler tabında göster */}
       {activeTab === 'tasks' && (
         <div className="grid md:grid-cols-2 gap-6">
-        {/* Hızlı Görev Ekleme */}
-        <Card className="hover:shadow-xl hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-white to-blue-50/30 border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <span>⚡</span>
-              <span>Hızlı Görev Ekle</span>
-            </CardTitle>
-            <CardDescription>
-              Tek tek görev ekleyin veya AI yardımı alın
-            </CardDescription>
+        {/* Hızlı Görev Ekleme - Enhanced */}
+        <Card className="hover:shadow-xl hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-white via-blue-50/50 to-cyan-50/30 border-0 shadow-lg relative overflow-hidden">
+          {/* Animated Background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-400/5 via-transparent to-cyan-400/5 animate-pulse pointer-events-none"></div>
+          
+          <CardHeader className="relative">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2 text-xl">
+                  <span className="text-2xl animate-pulse">⚡</span>
+                  <span className="bg-gradient-to-r from-blue-700 to-cyan-700 bg-clip-text text-transparent">
+                    Hızlı Görev Ekle
+                  </span>
+                </CardTitle>
+                <CardDescription className="mt-2 text-blue-600">
+                  Klasik yöntemle görev oluşturun + AI desteği
+                </CardDescription>
+              </div>
+              <div className="bg-gradient-to-r from-blue-100 to-cyan-100 px-3 py-1 rounded-full">
+                <span className="text-xs font-semibold text-blue-700">HIZLI</span>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 relative">
             <Input
+              key="task-title-input"
               name="title"
               placeholder="Görev başlığı..."
               value={newTask.title}
               onChange={handleInputChange}
               disabled={loading || aiLoading}
+              className="w-full"
+              autoComplete="off"
             />
             
             <div className="flex space-x-2">
@@ -619,6 +643,7 @@ export default function TaskManager() {
               </Select>
               
               <Input
+                key="task-category-input"
                 name="category"
                 placeholder="Kategori (opsiyonel)"
                 value={newTask.category}
@@ -631,6 +656,7 @@ export default function TaskManager() {
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Son Tarih (Opsiyonel)</label>
               <Input
+                key="task-deadline-input"
                 type="date"
                 name="deadline"
                 value={newTask.deadline}
@@ -643,6 +669,7 @@ export default function TaskManager() {
 
             <div className="flex space-x-2">
               <Textarea
+                key="task-description-input"
                 name="description"
                 placeholder="Görev açıklaması..."
                 value={newTask.description}
@@ -662,52 +689,135 @@ export default function TaskManager() {
               </Button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Button
                 onClick={addTask}
                 disabled={loading || !newTask.title.trim() || !newTask.description.trim()}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="w-full bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 hover:from-blue-700 hover:via-cyan-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg py-6"
+                size="lg"
               >
-                {loading ? '🔄 Ekleniyor...' : '✨ Görev Ekle'}
+                <span className="flex items-center justify-center space-x-2">
+                  {loading ? (
+                    <>
+                      <span className="animate-spin">🔄</span>
+                      <span>Ekleniyor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>✨</span>
+                      <span>Görev Ekle</span>
+                      <span>📝</span>
+                    </>
+                  )}
+                </span>
               </Button>
               
-              <Button
-                onClick={createTestNotification}
-                variant="outline"
-                className="w-full border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-300 hover:scale-105"
-                type="button"
-              >
-                🔔 Test Bildirimi Gönder
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  onClick={createTestNotification}
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-300 hover:scale-105"
+                  size="sm"
+                >
+                  🔔 Test Bildirimi
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="border-cyan-300 text-cyan-700 hover:bg-cyan-50 hover:border-cyan-400 transition-all duration-300 hover:scale-105"
+                  size="sm"
+                  onClick={() => window.location.href = '/tools'}
+                >
+                  🛠️ Araçlar
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Akıllı Görev Oluşturucu */}
-        <Card className="hover:shadow-xl hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-white to-purple-50/30 border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50">
-            <CardTitle className="flex items-center space-x-2">
-              <span>🚀</span>
-              <span>Akıllı Görev Oluşturucu</span>
-            </CardTitle>
-            <CardDescription>
-              Birden fazla görev oluşturun, size özel sorular cevaplayın
-            </CardDescription>
+        {/* Akıllı Görev Oluşturucu - Enhanced */}
+        <Card className="hover:shadow-xl hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-white via-purple-50/50 to-blue-50/30 border-0 shadow-lg relative overflow-hidden">
+          {/* Parlayan Efekt */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 via-transparent to-blue-400/10 animate-pulse pointer-events-none"></div>
+          
+          <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 relative">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2 text-xl">
+                  <span className="text-2xl animate-bounce">🚀</span>
+                  <span className="bg-gradient-to-r from-purple-700 to-blue-700 bg-clip-text text-transparent">
+                    AI Görev Asistanı
+                  </span>
+                </CardTitle>
+                <CardDescription className="mt-2 text-purple-600">
+                  Yapay zeka ile akıllı görev planlama sistemi
+                </CardDescription>
+              </div>
+              <div className="bg-gradient-to-r from-purple-100 to-blue-100 px-3 py-1 rounded-full">
+                <span className="text-xs font-semibold text-purple-700">PRO</span>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            <Button
-              onClick={startTaskCreation}
-              disabled={loading || aiLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-              size="lg"
-            >
-              🎯 Görev Oluşturmaya Başla
-            </Button>
+          <CardContent className="pt-6 space-y-6 relative">
+            {/* Ana CTA Butonu */}
+            <div className="text-center space-y-3">
+              <Button
+                onClick={startTaskCreation}
+                disabled={loading || aiLoading}
+                className="w-full bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 hover:from-purple-700 hover:via-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg py-6"
+                size="lg"
+              >
+                <span className="flex items-center justify-center space-x-2">
+                  <span className="text-xl">🎯</span>
+                  <span>Akıllı Görev Oluştur</span>
+                  <span className="text-xl">✨</span>
+                </span>
+              </Button>
+              
+              {/* Quick Hint */}
+              <p className="text-xs text-purple-600 bg-purple-50 px-3 py-2 rounded-lg border border-purple-200">
+                💡 1-10 arası görev sayısı seçip, AI'nın size özel sorular sormasını sağlayın
+              </p>
+            </div>
             
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>✨ Size özel sorular soracağız</p>
-              <p>📋 İhtiyacınıza göre görevler oluşturacağız</p>
-              <p>🤖 AI yardımıyla optimize edeceğiz</p>
+            {/* Özellik Kartları */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:shadow-md transition-all duration-300 hover:scale-105">
+                <div className="text-2xl mb-2">🧠</div>
+                <div className="text-xs font-semibold text-purple-700">Akıllı Analiz</div>
+                <div className="text-xs text-purple-600 mt-1">AI kategori önerileri</div>
+              </div>
+              
+              <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-md transition-all duration-300 hover:scale-105">
+                <div className="text-2xl mb-2">⚡</div>
+                <div className="text-xs font-semibold text-blue-700">Hızlı Üretim</div>
+                <div className="text-xs text-blue-600 mt-1">Anında görev oluştur</div>
+              </div>
+              
+              <div className="text-center p-3 bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-xl border border-cyan-200 hover:shadow-md transition-all duration-300 hover:scale-105">
+                <div className="text-2xl mb-2">🎨</div>
+                <div className="text-xs font-semibold text-cyan-700">Kişiselleştirme</div>
+                <div className="text-xs text-cyan-600 mt-1">Size özel planlar</div>
+              </div>
+            </div>
+            
+            {/* Detaylar */}
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-200">
+              <div className="text-sm text-purple-800 font-medium mb-2">🌟 Nasıl Çalışır?</div>
+              <div className="text-xs text-purple-700 space-y-1">
+                <div className="flex items-center space-x-2">
+                  <span className="w-4 h-4 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs">1</span>
+                  <span>Kaç görev istediğinizi söyleyin</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="w-4 h-4 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">2</span>
+                  <span>AI size kategori, öncelik soruları sorar</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="w-4 h-4 bg-cyan-500 text-white rounded-full flex items-center justify-center text-xs">3</span>
+                  <span>Özel görev listesi hazırlanır</span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -754,33 +864,61 @@ export default function TaskManager() {
       {/* Görevler sekmesi içeriği */}
       {activeTab === 'tasks' && (
         <>
-                    {/* AI Görev Önerileri Bölümü */}
-        <Card id="tasks-section" className="bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <span>🤖</span>
-            <span>AI Görev Asistanı</span>
-          </CardTitle>
-          <CardDescription>
-            Herhangi bir konuda görev önerileri alın
-          </CardDescription>
-        </CardHeader>
+                    {/* AI Görev Önerileri Bölümü - Enhanced */}
+        <Card id="tasks-section" className="bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+          {/* Glowing Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-400/5 via-blue-400/5 to-cyan-400/5 animate-pulse pointer-events-none"></div>
+          
+          <CardHeader className="relative">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2 text-xl">
+                  <span className="text-2xl animate-bounce">🤖</span>
+                  <span className="bg-gradient-to-r from-purple-700 via-blue-700 to-cyan-700 bg-clip-text text-transparent">
+                    AI Görev Önerileri
+                  </span>
+                </CardTitle>
+                <CardDescription className="mt-2 text-purple-600">
+                  Herhangi bir konuda AI destekli görev önerileri alın
+                </CardDescription>
+              </div>
+              <div className="bg-gradient-to-r from-purple-100 via-blue-100 to-cyan-100 px-3 py-1 rounded-full">
+                <span className="text-xs font-semibold text-purple-700">AI</span>
+              </div>
+            </div>
+          </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex space-x-2">
             <Input
+              key="ai-suggestion-input"
               type="text"
               placeholder="Hangi konuda görev önerileri istiyorsunuz? (örn: 'ev temizliği', 'proje yönetimi')"
               value={suggestionInput}
               onChange={(e) => setSuggestionInput(e.target.value)}
               className="flex-1"
               disabled={aiLoading}
+              autoComplete="off"
             />
             <Button 
               onClick={getAISuggestions}
               disabled={aiLoading || !suggestionInput.trim()}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 hover:from-purple-700 hover:via-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg py-6"
+              size="lg"
             >
-              {aiLoading ? '🔄 Üretiliyor...' : '✨ Öneriler Al'}
+              <span className="flex items-center justify-center space-x-2">
+                {aiLoading ? (
+                  <>
+                    <span className="animate-spin">🔄</span>
+                    <span>AI Çalışıyor...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>🤖</span>
+                    <span>AI Önerileri Al</span>
+                    <span>✨</span>
+                  </>
+                )}
+              </span>
             </Button>
           </div>
 

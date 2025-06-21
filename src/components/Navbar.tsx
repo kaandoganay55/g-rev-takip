@@ -81,6 +81,13 @@ export default function Navbar() {
                   </Button>
                 </Link>
 
+                {/* Araçlar linki */}
+                <Link href="/tools">
+                  <Button variant="ghost" size="sm" className="hidden md:flex">
+                    🛠️ Araçlar
+                  </Button>
+                </Link>
+
                 {/* Bildirim Merkezi */}
                 <NotificationCenter />
 
@@ -120,6 +127,12 @@ export default function Navbar() {
                     <DropdownMenuItem asChild>
                       <Link href="/" className="cursor-pointer">
                         📋 Görevlerim
+                      </Link>
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem asChild>
+                      <Link href="/tools" className="cursor-pointer">
+                        🛠️ Araçlar
                       </Link>
                     </DropdownMenuItem>
                     
