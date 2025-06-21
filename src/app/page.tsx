@@ -86,8 +86,16 @@ export default function TaskManager() {
     }
   }, [session]);
 
-  // Dinamik sorular oluştur
+  /**
+   * ============ DİNAMİK SORU ÜRETİCİSİ ============
+   * Görev sayısına göre kullanıcıya sorulacak soruları belirler
+   * Daha fazla görev = daha detaylı sorular
+   * 
+   * @param taskCount - Oluşturulacak görev sayısı
+   * @returns DynamicQuestion[] - Soru dizisi
+   */
   const generateDynamicQuestions = (taskCount: number): DynamicQuestion[] => {
+    // Temel sorular - her zaman sorulur
     const questions: DynamicQuestion[] = [
       {
         id: 'category',
@@ -103,6 +111,7 @@ export default function TaskManager() {
       }
     ];
 
+    // 3'ten fazla görev varsa deadline sorusu ekle
     if (taskCount > 3) {
       questions.push({
         id: 'deadline',
@@ -112,6 +121,7 @@ export default function TaskManager() {
       });
     }
 
+    // 5'ten fazla görev varsa zaman planlaması sorusu ekle
     if (taskCount > 5) {
       questions.push({
         id: 'timePerTask',
@@ -207,67 +217,114 @@ export default function TaskManager() {
     }
   };
 
-  // Sunucudan görevleri getiren fonksiyon
+  /**
+   * ============ VERİTABANI İLETİŞİMİ - GÖREV GETIRME ============
+   * Backend API'den kullanıcının görevlerini getirir
+   * 
+   * API Endpoint: GET /api/tasks
+   * Güvenlik: Session kontrolü backend'de yapılır
+   * Cache: Yok (real-time veri için)
+   */
   const fetchTasks = async () => {
     try {
+      // Loading durumunu aktifleştir ve hataları temizle
       setLoading(true);
       setError('');
       
+      // Backend API'ye GET isteği gönder
       const response = await fetch('/api/tasks');
       
+      // HTTP durumu kontrolü
       if (!response.ok) {
         throw new Error('Görevler getirilemedi');
       }
       
+      // JSON verilerini parse et
       const data = await response.json();
+      
+      // State'i güncelle - React otomatik re-render yapar
       setTasks(data);
+      
     } catch (error) {
+      // Hata loglama ve kullanıcı bildirimi
       console.error('Görevler getirilirken hata:', error);
       setError('Görevler yüklenemedi. Lütfen tekrar deneyin.');
-      setTasks([]);
+      setTasks([]); // Hata durumunda boş liste göster
     } finally {
+      // Loading durumunu her durumda kapat
       setLoading(false);
     }
   };
 
-  // Form input değişikliklerini yöneten fonksiyon
+  /**
+   * ============ FORM YÖNETİMİ - INPUT DEĞİŞİKLİKLERİ ============
+   * React controlled component pattern
+   * Her input değişikliğinde state güncellenir -> re-render tetiklenir
+   * 
+   * @param e - React ChangeEvent (input veya textarea)
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    console.log('Input change:', { name, value }); // Debug için
+    const { name, value } = e.target; // Input'un name ve value değerlerini al
+    
+    // Debug loglama - development'ta input davranışını takip et
+    console.log('Input change:', { name, value });
+    
+    // State'i immutable şekilde güncelle
+    // Önceki state'i koru, sadece değişen field'ı güncelle
     setNewTask(prev => ({ ...prev, [name]: value }));
   };
 
-  // AI görev önerileri alma fonksiyonu
+  /**
+   * ============ AI ENTEGRASYONİ - GÖREV ÖNERİLERİ ============
+   * OpenAI API kullanarak kullanıcı girdisine göre görev önerileri oluşturur
+   * 
+   * API Flow:
+   * 1. Frontend -> /api/ai/suggestions -> OpenAI API
+   * 2. OpenAI GPT-3.5-turbo modeli ile öneri üretir
+   * 3. Backend -> Frontend (JSON formatında öneriler)
+   * 
+   * @requires OpenAI API Key (environment variable)
+   */
   const getAISuggestions = async () => {
+    // Giriş validasyonu
     if (!suggestionInput.trim()) {
       setError('Lütfen bir konu girin');
       return;
     }
 
     try {
+      // AI loading durumunu aktifleştir
       setAiLoading(true);
       setError('');
 
+      // AI API'ye POST isteği gönder
       const response = await fetch('/api/ai/suggestions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userInput: suggestionInput }),
+        body: JSON.stringify({ 
+          userInput: suggestionInput // Kullanıcının girdiği konu
+        }),
       });
 
+      // API yanıt kontrolü
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'AI önerileri alınamadı');
       }
 
+      // AI önerilerini al ve state'i güncelle
       const data = await response.json();
-      setAiSuggestions(data.suggestions);
-      setShowSuggestions(true);
+      setAiSuggestions(data.suggestions); // String array olarak öneriler
+      setShowSuggestions(true); // Önerileri görünür yap
+      
     } catch (error: any) {
+      // AI hataları - genelde API key veya rate limit
       console.error('AI önerileri hatası:', error);
       setError(error.message || 'AI önerileri alınırken hata oluştu');
     } finally {
+      // AI loading durumunu kapat
       setAiLoading(false);
     }
   };
@@ -549,8 +606,6 @@ export default function TaskManager() {
           </CardContent>
         </Card>
       )}
-
-
 
       {/* Modern Tab Navigasyonu */}
       <div className="flex justify-center mb-8">

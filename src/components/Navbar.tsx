@@ -88,6 +88,13 @@ export default function Navbar() {
                   </Button>
                 </Link>
 
+                {/* Analytics linki */}
+                <Link href="/analytics">
+                  <Button variant="ghost" size="sm" className="hidden lg:flex">
+                    📊 Analytics
+                  </Button>
+                </Link>
+
                 {/* Bildirim Merkezi */}
                 <NotificationCenter />
 
@@ -136,12 +143,22 @@ export default function Navbar() {
                       </Link>
                     </DropdownMenuItem>
                     
-                    <DropdownMenuItem disabled>
-                      ⚙️ Ayarlar
+                    <DropdownMenuItem asChild>
+                      <Link href="/analytics" className="cursor-pointer">
+                        📊 Analytics
+                      </Link>
                     </DropdownMenuItem>
                     
-                    <DropdownMenuItem disabled>
-                      📊 İstatistikler
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="cursor-pointer">
+                        👤 Profil
+                      </Link>
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="cursor-pointer">
+                        ⚙️ Ayarlar
+                      </Link>
                     </DropdownMenuItem>
                     
                     <DropdownMenuSeparator />
